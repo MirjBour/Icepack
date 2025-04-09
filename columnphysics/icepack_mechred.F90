@@ -1705,7 +1705,22 @@
       !-----------------------------------------------------------------
       ! Compute ice strength as in Hibler (1979)
       !-----------------------------------------------------------------
-
+         if (fsd_fract = 1 and aice > puny ) then
+            fract = c0 !must be defined somewhere before
+            work = c0 !representative radius
+            P_i_max = c4 * pi/(c2 + floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            !could be defined somewhere before
+            do k = 1, nfsd
+               do n = 1, ncat
+                  work = work &
+                            + (afsdn(k,n) * floe_rad_c(k) &
+                            * aicen(n)/aice)
+            !afsdn(k,n) = trcrn(:,:,nt_nfsd+k-1,n,:)
+               end do
+            end do
+            fract = (c4 * pi /(c2 * work * c4 * floeshape))/P_i_max !needs testing from data again
+            strength = Pstar*vice*exp(-Cstar*(c1-aice))* (c1 - fract)
+         endif                   !fasd_fract = 1
          strength = Pstar*vice*exp(-Cstar*(c1-aice))
 
       endif                     ! kstrength
