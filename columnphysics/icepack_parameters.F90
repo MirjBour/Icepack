@@ -245,7 +245,7 @@
                             ! 1 for Rothrock (1975) pressure formulation
          krdg_partic = 1, & ! 0 for Thorndike et al. (1975) formulation
                             ! 1 for exponential participation function
-         krdg_redist = 1  & ! 0 for Hibler (1980) formulation
+         krdg_redist = 1, & ! 0 for Hibler (1980) formulation
                             ! 1 for exponential redistribution function
          fsdfract    = 0    ! 0 for no ice strength weakening through FSD
                             ! 1 for ice strength weakening through FSD  
@@ -570,7 +570,7 @@
          phi_i_mushy_in, shortwave_in, albedo_type_in, albsnowi_in, &
          albicev_in, albicei_in, albsnowv_in, &
          ahmax_in, R_ice_in, R_pnd_in, R_snw_in, dT_mlt_in, rsnw_mlt_in, &
-         kalg_in, R_gC2molC_in, kstrength_in, krdg_partic_in, krdg_redist_in, mu_rdg_in, &
+         kalg_in, R_gC2molC_in, kstrength_in, krdg_partic_in, krdg_redist_in, mu_rdg_in, fsdfract_in, &
          atmbndy_in, calc_strair_in, formdrag_in, highfreq_in, natmiter_in, &
          atmiter_conv_in, calc_dragio_in, &
          tfrz_option_in, kitd_in, kcatbound_in, hs0_in, frzpnd_in, &
@@ -799,8 +799,10 @@
                            ! 1 for Rothrock (1975) pressure formulation
          krdg_partic_in, & ! 0 for Thorndike et al. (1975) formulation
                            ! 1 for exponential participation function
-         krdg_redist_in    ! 0 for Hibler (1980) formulation
+         krdg_redist_in, & ! 0 for Hibler (1980) formulation
                            ! 1 for exponential redistribution function
+         fsdfract_in       ! 0 for no ice strength weakening through FSD
+                           ! 1 for ice strength weakening through FSD 
 
       real (kind=dbl_kind), intent(in), optional :: &
          mu_rdg_in         ! gives e-folding scale of ridged ice (m^.5)
@@ -1197,6 +1199,7 @@
       if (present(krdg_partic_in)       ) krdg_partic      = krdg_partic_in
       if (present(krdg_redist_in)       ) krdg_redist      = krdg_redist_in
       if (present(mu_rdg_in)            ) mu_rdg           = mu_rdg_in
+      if (present(fsdfract_in)          ) fsdfract         = fsdfract_in
       if (present(atmbndy_in)           ) atmbndy          = atmbndy_in
       if (present(calc_strair_in)       ) calc_strair      = calc_strair_in
       if (present(formdrag_in)          ) formdrag         = formdrag_in
@@ -1580,7 +1583,7 @@
          albedo_type_out, albicev_out, albicei_out, albsnowv_out, &
          albsnowi_out, ahmax_out, R_ice_out, R_pnd_out, R_snw_out, dT_mlt_out, &
          rsnw_mlt_out, dEdd_algae_out, &
-         kalg_out, R_gC2molC_out, kstrength_out, krdg_partic_out, krdg_redist_out, mu_rdg_out, &
+         kalg_out, R_gC2molC_out, kstrength_out, krdg_partic_out, krdg_redist_out, mu_rdg_out, fsdfract_out, &
          atmbndy_out, calc_strair_out, formdrag_out, highfreq_out, natmiter_out, &
          atmiter_conv_out, calc_dragio_out, &
          tfrz_option_out, kitd_out, kcatbound_out, hs0_out, frzpnd_out, &
@@ -1819,8 +1822,10 @@
                             ! 1 for Rothrock (1975) pressure formulation
          krdg_partic_out, & ! 0 for Thorndike et al. (1975) formulation
                             ! 1 for exponential participation function
-         krdg_redist_out    ! 0 for Hibler (1980) formulation
+         krdg_redist_out, & ! 0 for Hibler (1980) formulation
                             ! 1 for exponential redistribution function
+         fsdfract_out       ! 0 for no ice strength weakening through FSD
+                            ! 1 for ice strength weakening through FSD 
 
       real (kind=dbl_kind), intent(out), optional :: &
          mu_rdg_out         ! gives e-folding scale of ridged ice (m^.5)
@@ -2249,6 +2254,7 @@
       if (present(krdg_partic_out)       ) krdg_partic_out  = krdg_partic
       if (present(krdg_redist_out)       ) krdg_redist_out  = krdg_redist
       if (present(mu_rdg_out)            ) mu_rdg_out       = mu_rdg
+      if (present(fsdfract_out)          ) fsdfract_out     = fsdfract
       if (present(atmbndy_out)           ) atmbndy_out      = atmbndy
       if (present(calc_strair_out)       ) calc_strair_out  = calc_strair
       if (present(formdrag_out)          ) formdrag_out     = formdrag

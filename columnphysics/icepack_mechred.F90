@@ -48,7 +48,9 @@
       use icepack_tracers, only: nt_apnd, nt_hpnd
       use icepack_tracers, only: n_iso, bio_index
       use icepack_tracers, only: icepack_compute_tracers
-      use icepack_tracers, only: nfsd, nt_fsd, floe_rad_c
+      use icepack_tracers, only: nfsd, nt_fsd
+      
+!      use icepack_fsd, only: floe_rad_c
 
       use icepack_warnings, only: warnstr, icepack_warnings_add
       use icepack_warnings, only: icepack_warnings_setabort, icepack_warnings_aborted
@@ -1605,7 +1607,7 @@
                                       aice0,    aicen,    &
                                       vicen,    &
                                       strength, &
-                                      trcrn)
+                                      trcrn,    floe_rad_c)
 
       real (kind=dbl_kind), intent(in) :: &
          aice   , & ! concentration of ice
@@ -1620,7 +1622,10 @@
          strength   ! ice strength (N/m)
 
       real (kind=dbl_kind), dimension (:,:), intent(inout) :: &
-         trcrn          ! ice tracers
+         trcrn      ! ice tracers
+
+      real(kind=dbl_kind), dimension(:), intent(in) ::  &
+         floe_rad_c      ! fsd size bin centre in m (radius)
 
 !autodocument_end
 
@@ -1640,17 +1645,21 @@
          hrexp  , & ! ridge e-folding thickness (krdg_redist = 1)
          krdg       ! mean ridge thickness/thickness of ridging ice
 
+      real (kind=dbl_kind), dimension(nfsd,ncat) :: &
+         afsdn          ! floe size distribution tracer
+
       integer (kind=int_kind) :: &
-         n          ! thickness category index
+         n      , & ! thickness category index
+         k          ! fsd category index
 
       real (kind=dbl_kind) :: &
+         work   , & ! temporary variable
+         fract  , & ! fracture parameter derived from FSD
+         P_i_max, & ! minimum perimeter (should be tuneable)
          hi     , & ! ice thickness (m)
          h2rdg  , & ! mean value of h^2 for new ridge
          dh2rdg     ! change in mean value of h^2 per unit area
                     ! consumed by ridging
-         work   , & ! temporary variable
-         fract  , & ! fracture parameter derived from FSD
-         P_i_max,   ! minimum perimeter (should be tuneable)
 
       character(len=*),parameter :: subname='(icepack_ice_strength)'
 
