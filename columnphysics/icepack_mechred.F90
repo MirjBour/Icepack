@@ -34,12 +34,12 @@
       module icepack_mechred
 
       use icepack_kinds
-      use icepack_parameters, only: c0, c1, c2, c10, c25, Cf, Cp, Pstar, Cstar
+      use icepack_parameters, only: c0, c1, c2, c4, c10, c25, Cf, Cp, Pstar, Cstar
       use icepack_parameters, only: p05, p15, p25, p333, p5
-      use icepack_parameters, only: puny, Lfresh, rhoi, rhos
+      use icepack_parameters, only: puny, Lfresh, rhoi, rhos, pi, floeshape
       use icepack_parameters, only: icepack_chkoptargflag
 
-      use icepack_parameters, only: kstrength, krdg_partic, krdg_redist, mu_rdg
+      use icepack_parameters, only: kstrength, krdg_partic, krdg_redist, mu_rdg, fsdfract
       use icepack_parameters, only: conserv_check, z_tracers
       use icepack_tracers, only: ncat, nilyr, nslyr, nblyr, n_aero
       use icepack_tracers, only: tr_pond_topo, tr_aero, tr_iso, tr_brine, ntrcr, nbtrcr
@@ -48,6 +48,7 @@
       use icepack_tracers, only: nt_apnd, nt_hpnd
       use icepack_tracers, only: n_iso, bio_index
       use icepack_tracers, only: icepack_compute_tracers
+      use icepack_tracers, only: nfsd, nt_fsd, floe_rad_c
 
       use icepack_warnings, only: warnstr, icepack_warnings_add
       use icepack_warnings, only: icepack_warnings_setabort, icepack_warnings_aborted
@@ -1603,7 +1604,8 @@
       subroutine icepack_ice_strength(aice,     vice,     &
                                       aice0,    aicen,    &
                                       vicen,    &
-                                      strength)
+                                      strength, &
+                                      trcrn)
 
       real (kind=dbl_kind), intent(in) :: &
          aice   , & ! concentration of ice
@@ -1616,6 +1618,9 @@
 
       real (kind=dbl_kind), intent(inout) :: &
          strength   ! ice strength (N/m)
+
+      real (kind=dbl_kind), dimension (:,:), intent(inout) :: &
+         trcrn          ! ice tracers
 
 !autodocument_end
 
@@ -1643,6 +1648,9 @@
          h2rdg  , & ! mean value of h^2 for new ridge
          dh2rdg     ! change in mean value of h^2 per unit area
                     ! consumed by ridging
+         work   , & ! temporary variable
+         fract  , & ! fracture parameter derived from FSD
+         P_i_max,   ! minimum perimeter (should be tuneable)
 
       character(len=*),parameter :: subname='(icepack_ice_strength)'
 
@@ -1705,21 +1713,21 @@
       !-----------------------------------------------------------------
       ! Compute ice strength as in Hibler (1979)
       !-----------------------------------------------------------------
-         if (fsd_fract = 1 and aice > puny ) then
+         if (fsdfract == 1 .and. aice > puny ) then
             fract = c0 !must be defined somewhere before
             work = c0 !representative radius
-            P_i_max = c4 * pi/(c2 + floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            P_i_max = c4 * pi/(c2 * floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
             !could be defined somewhere before
             do k = 1, nfsd
                do n = 1, ncat
+                  afsdn(k,n) = trcrn(nt_fsd+k-1,n)
                   work = work &
                             + (afsdn(k,n) * floe_rad_c(k) &
                             * aicen(n)/aice)
-            !afsdn(k,n) = trcrn(:,:,nt_nfsd+k-1,n,:)
                end do
             end do
             fract = (c4 * pi /(c2 * work * c4 * floeshape))/P_i_max !needs testing from data again
-            strength = Pstar*vice*exp(-Cstar*(c1-aice))* (c1 - fract)
+            strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
          endif                   !fasd_fract = 1
          strength = Pstar*vice*exp(-Cstar*(c1-aice))
 

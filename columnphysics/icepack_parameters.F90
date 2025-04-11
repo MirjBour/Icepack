@@ -245,8 +245,10 @@
                             ! 1 for Rothrock (1975) pressure formulation
          krdg_partic = 1, & ! 0 for Thorndike et al. (1975) formulation
                             ! 1 for exponential participation function
-         krdg_redist = 1    ! 0 for Hibler (1980) formulation
+         krdg_redist = 1  & ! 0 for Hibler (1980) formulation
                             ! 1 for exponential redistribution function
+         fsdfract    = 0    ! 0 for no ice strength weakening through FSD
+                            ! 1 for ice strength weakening through FSD  
 
       real (kind=dbl_kind), public :: &
          Cf       = 17._dbl_kind     ,&! ratio of ridging work to PE change in ridging
@@ -2556,6 +2558,7 @@
         write(iounit,*) "  kstrength  = ", kstrength
         write(iounit,*) "  krdg_partic= ", krdg_partic
         write(iounit,*) "  krdg_redist= ", krdg_redist
+        write(iounit,*) "  fsdfract   = ", fsdfract
         write(iounit,*) "  mu_rdg     = ", mu_rdg
         write(iounit,*) "  atmbndy    = ", trim(atmbndy)
         write(iounit,*) "  calc_strair= ", calc_strair
