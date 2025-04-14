@@ -1604,8 +1604,8 @@
       subroutine icepack_ice_strength(aice,     vice,     &
                                       aice0,    aicen,    &
                                       vicen,    &
-                                      strength, &
-                                      trcrn,    floe_rad_c)
+                                      trcrn,    floe_rad_c, &
+                                      strength)
 
       real (kind=dbl_kind), intent(in) :: &
          aice   , & ! concentration of ice
@@ -1616,14 +1616,14 @@
          aicen  , & ! concentration of ice
          vicen      ! volume per unit area of ice  (m)
 
-      real (kind=dbl_kind), intent(inout) :: &
-         strength   ! ice strength (N/m)
-
-      real (kind=dbl_kind), dimension (:,:), intent(inout) :: &
+      real (kind=dbl_kind), dimension (:,:), intent(in) :: &
          trcrn      ! ice tracers
 
       real(kind=dbl_kind), dimension(:), intent(in) ::  &
          floe_rad_c      ! fsd size bin centre in m (radius)
+
+      real (kind=dbl_kind), intent(inout) :: &
+      strength   ! ice strength (N/m)
 
 !autodocument_end
 
