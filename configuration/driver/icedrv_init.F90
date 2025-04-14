@@ -105,7 +105,7 @@
          windmin, drhosdwind, snwlvlfac
 
       integer (kind=int_kind) :: ktherm, kstrength, krdg_partic, krdg_redist, &
-         natmiter, kitd, kcatbound
+         natmiter, kitd, kcatbound, fsdfract
 
       character (len=char_len) :: shortwave, albedo_type, conduct, fbot_xfer_type, &
          cpl_frazil, congel_freeze, tfrz_option, saltflux_option, &
@@ -162,7 +162,7 @@
 
       namelist /dynamics_nml/ &
         kstrength,      krdg_partic,    krdg_redist,    mu_rdg,         &
-        Cf
+        Cf,             fsdfract
 
       namelist /shortwave_nml/ &
         shortwave,      albedo_type,                                    &
@@ -221,7 +221,7 @@
            albedo_type_out=albedo_type, R_ice_out=R_ice, R_pnd_out=R_pnd, &
            R_snw_out=R_snw, dT_mlt_out=dT_mlt, rsnw_mlt_out=rsnw_mlt, &
            kstrength_out=kstrength, krdg_partic_out=krdg_partic, &
-           krdg_redist_out=krdg_redist, mu_rdg_out=mu_rdg, &
+           krdg_redist_out=krdg_redist, mu_rdg_out=mu_rdg, fsdfract_out=fsdfract,&
            atmbndy_out=atmbndy, calc_strair_out=calc_strair, &
            formdrag_out=formdrag, highfreq_out=highfreq, &
            emissivity_out=emissivity, &
@@ -704,6 +704,7 @@
          write(nu_diag,1020) ' kstrength                 = ', kstrength
          write(nu_diag,1020) ' krdg_partic               = ', krdg_partic
          write(nu_diag,1020) ' krdg_redist               = ', krdg_redist
+         write(nu_diag,1020) ' fsdfract                  = ', fsdfract
          if (krdg_redist == 1) &
          write(nu_diag,1000) ' mu_rdg                    = ', mu_rdg
          if (kstrength == 1) &
@@ -991,7 +992,7 @@
            albedo_type_in=albedo_type, R_ice_in=R_ice, R_pnd_in=R_pnd, &
            R_snw_in=R_snw, dT_mlt_in=dT_mlt, rsnw_mlt_in=rsnw_mlt, &
            kstrength_in=kstrength, krdg_partic_in=krdg_partic, &
-           krdg_redist_in=krdg_redist, mu_rdg_in=mu_rdg, &
+           krdg_redist_in=krdg_redist, mu_rdg_in=mu_rdg, fsdfract_in=fsdfract, &
            atmbndy_in=atmbndy, calc_strair_in=calc_strair, &
            formdrag_in=formdrag, highfreq_in=highfreq, &
            emissivity_in=emissivity, &
