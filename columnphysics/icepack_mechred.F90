@@ -49,8 +49,6 @@
       use icepack_tracers, only: n_iso, bio_index
       use icepack_tracers, only: icepack_compute_tracers
       use icepack_tracers, only: nfsd, nt_fsd
-      
-!      use icepack_fsd, only: floe_rad_c
 
       use icepack_warnings, only: warnstr, icepack_warnings_add
       use icepack_warnings, only: icepack_warnings_setabort, icepack_warnings_aborted
