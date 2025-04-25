@@ -1602,7 +1602,7 @@
                                       aice0,    aicen,    &
                                       vicen,    &
                                       trcrn,    floe_rad_c, &
-                                      strength)
+                                      fract,    strength)
 
       integer (kind=int_kind), intent(in) :: &
          ncat       ! number of thickness categories
@@ -1623,7 +1623,8 @@
          floe_rad_c      ! fsd size bin centre in m (radius)
 
       real (kind=dbl_kind), intent(inout) :: &
-      strength   ! ice strength (N/m)
+         strength , & ! ice strength (N/m)
+         fract        ! fracture parameter derived from FSD
 
 !autodocument_end
 
@@ -1652,7 +1653,6 @@
 
       real (kind=dbl_kind) :: &
          work   , & ! temporary variable
-         fract  , & ! fracture parameter derived from FSD
          P_i_max, & ! minimum perimeter (should be tuneable)
          hi     , & ! ice thickness (m)
          h2rdg  , & ! mean value of h^2 for new ridge
@@ -1721,7 +1721,6 @@
       ! Compute ice strength as in Hibler (1979)
       !-----------------------------------------------------------------
          if (fsdfract == 1 .and. aice > puny ) then
-            fract = c0 !must be defined somewhere before
             work = c0 !representative radius
             P_i_max = c4 * pi/(c2 * floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
             !could be defined somewhere before
@@ -1733,11 +1732,16 @@
                             * aicen(n)/aice)
                end do
             end do
-            fract = (c4 * pi /(c2 * work * c4 * floeshape))/P_i_max !needs testing from data again
+            if (work <= floe_rad_c(0)) then
+               fract = c1/c2 - puny
+            else
+               fract = (c4 * pi /(c2 * work * c4 * floeshape))/c2 *P_i_max !needs testing from data again
+               !fract = P_i_max 
+            endif   
             strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
-         endif                   !fasd_fract = 1
-         strength = Pstar*vice*exp(-Cstar*(c1-aice))
-
+         else                   !fasd_fract = 1
+            strength = Pstar*vice*exp(-Cstar*(c1-aice))
+         endif
       endif                     ! kstrength
 
       end subroutine icepack_ice_strength
