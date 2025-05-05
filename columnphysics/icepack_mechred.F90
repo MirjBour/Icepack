@@ -1653,6 +1653,8 @@
 
       real (kind=dbl_kind) :: &
          work   , & ! temporary variable
+         work_1 ,&  ! temporary variable
+         work_2, &  ! temporary variable
          P_i_max, & ! minimum perimeter (should be tuneable)
          hi     , & ! ice thickness (m)
          h2rdg  , & ! mean value of h^2 for new ridge
@@ -1722,22 +1724,66 @@
       !-----------------------------------------------------------------
          if (fsdfract == 1 .and. aice > puny ) then
             work = c0 !representative radius
-            P_i_max = c4 * pi/(c2 * floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
-            !could be defined somewhere before
+            work_1 = c0 !Total number of floes
+            work_2 = c0 !mean perimeter
+            !for perimeter scaling
+            !P_i_max = c4 * pi/(c2 * floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            !for repr. radius scaling
+            !P_i_max = floe_rad_c(11)
+            !for mean perimeter scaling
+            P_i_max = c2 * pi * floe_rad_c(11)
+            !calc repr. radius
             do k = 1, nfsd
                do n = 1, ncat
                   afsdn(k,n) = trcrn(nt_fsd+k-1,n)
                   work = work &
                             + (afsdn(k,n) * floe_rad_c(k) &
                             * aicen(n)/aice)
+                  work_1 = work_1 &
+                           + (afsdn(k,n) * aicen(n) / c4*floeshape*floe_rad_c(k)**2)
+               end do
+            end do
+            if (work_1 <= c0) then
+               work_1 = puny
+            endif
+            write(warnstr,*) subname, 'N:', work_1
+            call icepack_warnings_add(warnstr)
+            do k = 1, nfsd
+               do n = 1, ncat
+                  afsdn(k,n) = trcrn(nt_fsd+k-1,n)
+                  work_2 = work_2 &
+                              + (c2 * pi * floe_rad_c(k) * afsdn(k,n) * aicen(n) &
+                              / work_1)
                end do
             end do
             if (work <= floe_rad_c(0)) then
-               fract = c1/c2 - puny
-            else
-               fract = (c4 * pi /(c2 * work * c4 * floeshape))/c2 *P_i_max !needs testing from data again
-               !fract = P_i_max 
+               !for perimeter scaling
+               !fract = c1/c2 - puny
+               !for repr. radius scaling
+               work = floe_rad_c(0)
+            !for perimeter scaling
+            !else
+               !fract = (c4 * pi /(c2 * work * c4 * floeshape))/c2 *P_i_max
+            else if (work >= floe_rad_c(11)) then
+               work = floe_rad_c(11)
+            else if (work_2 <= c2*pi*floe_rad_c(0)) then
+               work_2 = c2 * pi * floe_rad_c(0)
+            else if (work >= c2*pi*floe_rad_c(11)) then
+               work_2 = c2 * pi *floe_rad_c(11)
             endif   
+            !for repr. radius scaling
+            !fract = work / (c2 * P_i_max)
+            !for mean perimeter scaling
+            write(warnstr,*) subname, 'repr. radius:', work
+            call icepack_warnings_add(warnstr)
+            if (work/floe_rad_c(11) <= floe_rad_c(0)/floe_rad_c(11)) then
+               fract = work_2 / (c2 * P_i_max)
+            else
+               fract = work_2 /(work_2 * (log(work/floe_rad_c(11))+c1)) &
+                     / (c2 * P_i_max)
+            endif
+            write(warnstr,*) subname, 'fract:', fract
+            call icepack_warnings_add(warnstr)
             strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
          else                   !fasd_fract = 1
             strength = Pstar*vice*exp(-Cstar*(c1-aice))
