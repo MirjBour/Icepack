@@ -34,6 +34,7 @@
       use icepack_tracers, only: nt_fsd
       use icepack_warnings, only: warnstr, icepack_warnings_add,  icepack_warnings_aborted
       use icepack_fsd
+      use NilsFSD
 
       implicit none
       private
@@ -188,7 +189,7 @@
                   aice,          vice,            aicen,     &
                   floe_rad_l,    floe_rad_c,                 &
                   wave_spectrum, wavefreq,        dwavefreq, &
-                  trcrn,         d_afsd_wave)
+                  trcrn,         d_afsd_wave,  divu, floe_binwidth, hin_max,d_afsd_nils, tarea)
 
 
       character (len=char_len), intent(in) :: &
@@ -202,18 +203,18 @@
       real (kind=dbl_kind), intent(in) :: &
          dt,           & ! time step
          aice,         & ! ice area fraction
-         vice            ! ice volume per unit area
+         vice, divu, tarea            ! ice volume per unit area
 
       real (kind=dbl_kind), dimension(ncat), intent(in) :: &
          aicen           ! ice area fraction (categories)
 
       real(kind=dbl_kind), dimension(:), intent(in) ::  &
          floe_rad_l,   & ! fsd size lower bound in m (radius)
-         floe_rad_c      ! fsd size bin centre in m (radius)
+         floe_rad_c, hin_max      ! fsd size bin centre in m (radius)
 
       real (kind=dbl_kind), dimension (:), intent(in) :: &
          wavefreq,     & ! wave frequencies (s^-1)
-         dwavefreq       ! wave frequency bin widths (s^-1)
+         dwavefreq, floe_binwidth        ! wave frequency bin widths (s^-1)
 
       real (kind=dbl_kind), dimension(:), intent(in) :: &
          wave_spectrum   ! ocean surface wave spectrum as a function of frequency
@@ -223,8 +224,8 @@
          trcrn           ! tracer array
 
       real (kind=dbl_kind), dimension(:), intent(out) :: &
-         d_afsd_wave     ! change in fsd due to waves
-
+           d_afsd_wave     ! change in fsd due to waves
+      real (kind=dbl_kind), dimension(:), intent(inout) :: d_afsd_nils
       real (kind=dbl_kind), dimension(nfsd,ncat) :: &
          d_afsdn_wave    ! change in fsd due to waves, per category
 
@@ -256,8 +257,9 @@
          subname='(icepack_step_wavefracture)'
 
       !------------------------------------
-
+   
       ! initialize
+      d_afsd_nils (:) = c0
       d_afsd_wave    (:)   = c0
       d_afsdn_wave   (:,:) = c0
       fracture_hist  (:)   = c0
@@ -372,6 +374,7 @@
                   ! update trcrn
                   trcrn(nt_fsd:nt_fsd+nfsd-1,n) = afsd_tmp/SUM(afsd_tmp)
                   call icepack_cleanup_fsd (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:) )
+         
                   if (icepack_warnings_aborted(subname)) return
 
                   ! for diagnostics
@@ -383,7 +386,8 @@
 
       endif          ! aice > p01
       endif         ! all small floes
-
+      call correct_FSD (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:), aice, tarea, divu,dt, d_afsd_nils,aicen)
+      call icepack_cleanup_fsd (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:))
       end subroutine icepack_step_wavefracture
 
 !=======================================================================
