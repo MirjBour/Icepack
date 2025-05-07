@@ -189,7 +189,7 @@
                   aice,          vice,            aicen,     &
                   floe_rad_l,    floe_rad_c,                 &
                   wave_spectrum, wavefreq,        dwavefreq, &
-                  trcrn,         d_afsd_wave,  divu, floe_binwidth, hin_max,d_afsd_nils, tarea)
+                  trcrn,         d_afsd_wave,  divu, floe_binwidth, hin_max,d_afsd_nils, tarea,ni,nj)
 
 
       character (len=char_len), intent(in) :: &
@@ -198,8 +198,8 @@
       integer (kind=int_kind), intent(in) :: &
          nfreq,        & ! number of wave frequency categories
          ncat,         & ! number of thickness categories
-         nfsd            ! number of floe size categories
-
+         nfsd,&            ! number of floe size categories
+         ni,nj            
       real (kind=dbl_kind), intent(in) :: &
          dt,           & ! time step
          aice,         & ! ice area fraction
@@ -386,7 +386,7 @@
 
       endif          ! aice > p01
       endif         ! all small floes
-      call correct_FSD (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:), aice, tarea, divu,dt, d_afsd_nils,aicen)
+      call correct_FSD (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:), aice, tarea, divu,dt, d_afsd_nils,aicen,ni,nj)
       call icepack_cleanup_fsd (ncat, nfsd, trcrn(nt_fsd:nt_fsd+nfsd-1,:))
       end subroutine icepack_step_wavefracture
 
