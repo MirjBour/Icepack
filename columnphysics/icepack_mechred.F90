@@ -1729,7 +1729,7 @@
             !for perimeter scaling
             !P_i_max = c4 * pi/(c2 * floe_rad_c(1) * c4 * floeshape) !is const just depends on smallest possible floes shape
             !for perimeter-log scaling
-            P_i_max = c4 * pi * c10 /(c2 * floe_rad_c(12) * c4 * floeshape)
+            !P_i_max = c4 * pi * c10 /(c2 * floe_rad_c(12) * c4 * floeshape)
             !for repr. radius scaling
             !P_i_max = floe_rad_c(12)
             !for mean perimeter scaling
@@ -1778,8 +1778,8 @@
             if (work <= floe_rad_c(12)/c10) then
                !for mean perimeter scaling with log
                !fract = work_2 / (c2 * P_i_max)
-               !for perimeter scaling with log
-               fract = c1/c2 - puny
+               !for perimeter scaling with log and rep. radius inverse log
+               fract = c1/c2 + puny
                write(warnstr,*) subname, 'if-case', work
                call icepack_warnings_add(warnstr)
             else
@@ -1787,8 +1787,10 @@
                !fract = (work_2 * (log(work/floe_rad_c(12))+c1)) &
                !     / (c2 * P_i_max)
                !for perimeter scaling with log
-               fract = (c4 * pi /(c2 * work * c4 * floeshape))   &
-                    * (log10(work/floe_rad_c(12))+c1) /c2 *P_i_max
+               !fract = (c4 * pi /(c2 * work * c4 * floeshape))   &
+               !     * (log10(work/floe_rad_c(12))+c1) /c2 *P_i_max
+               !for rep. radius inverse log scaling (H)
+               fract = (c1-(log10(work/floe_rad_c(12))+c1))/c2               
                write(warnstr,*) subname, 'Log:', (log10(work/floe_rad_c(12))+c1)
                call icepack_warnings_add(warnstr)
             endif
