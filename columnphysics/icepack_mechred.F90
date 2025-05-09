@@ -1727,11 +1727,13 @@
             work_1 = c0 !Total number of floes
             work_2 = c0 !mean perimeter
             !for perimeter scaling
-            !P_i_max = c4 * pi/(c2 * floe_rad_c(0) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            !P_i_max = c4 * pi/(c2 * floe_rad_c(1) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            !for perimeter-log scaling
+            P_i_max = c4 * pi * c10 /(c2 * floe_rad_c(12) * c4 * floeshape)
             !for repr. radius scaling
-            !P_i_max = floe_rad_c(11)
+            !P_i_max = floe_rad_c(12)
             !for mean perimeter scaling
-            P_i_max = c2 * pi * floe_rad_c(11)
+            !P_i_max = c2 * pi * floe_rad_c(12)
             !calc repr. radius
             do k = 1, nfsd
                do n = 1, ncat
@@ -1739,53 +1741,59 @@
                   work = work &
                             + (afsdn(k,n) * floe_rad_c(k) &
                             * aicen(n)/aice)
-                  work_1 = work_1 &
-                           + (afsdn(k,n) * aicen(n) / c4*floeshape*floe_rad_c(k)**2)
+                  !work_1 = work_1 &
+                  !         + (afsdn(k,n) * aicen(n) / c4*floeshape*floe_rad_c(k)**2)
                end do
             end do
-            if (work_1 <= c0) then
-               work_1 = puny
-            endif
-            write(warnstr,*) subname, 'N:', work_1
+            !if (work_1 <= c0) then
+            !   work_1 = puny
+            !endif
+            write(warnstr,*) subname, 'rep. Radius:', work
             call icepack_warnings_add(warnstr)
-            do k = 1, nfsd
-               do n = 1, ncat
-                  afsdn(k,n) = trcrn(nt_fsd+k-1,n)
-                  work_2 = work_2 &
-                              + (c2 * pi * floe_rad_c(k) * afsdn(k,n) * aicen(n)) &
-                              /(pi * floe_rad_c(k)**2 * work_1)
-               end do
-            end do
-            if (work <= floe_rad_c(0)) then
+            !do k = 1, nfsd
+            !   do n = 1, ncat
+            !      afsdn(k,n) = trcrn(nt_fsd+k-1,n)
+            !      work_2 = work_2 &
+            !                  + (c2 * pi * floe_rad_c(k) * afsdn(k,n) * aicen(n)) &
+            !                  /(pi * floe_rad_c(k)**2 * work_1)
+            !   end do
+            !end do
+            if (work <= floe_rad_c(1)) then
                !for perimeter scaling
                !fract = c1/c2 - puny
                !for repr. radius scaling
-               write(warnstr,*) subname, 'repr. radius too small:', work
-               call icepack_warnings_add(warnstr)
-               work = floe_rad_c(0)
+               work = floe_rad_c(1)
             !for perimeter scaling
             !else
                !fract = (c4 * pi /(c2 * work * c4 * floeshape))/c2 *P_i_max
-            else if (work >= floe_rad_c(11)) then
-               work = floe_rad_c(11)
-               write(warnstr,*) subname, 'repr. radius too large:', work
-               call icepack_warnings_add(warnstr)
-            else if (work_2 <= c2*pi*floe_rad_c(0)) then
-               work_2 = c2 * pi * floe_rad_c(0)
-            else if (work >= c2*pi*floe_rad_c(11)) then
-               work_2 = c2 * pi *floe_rad_c(11)
+            else if (work >= floe_rad_c(12)) then
+               work = floe_rad_c(12)
+            !else if (work_2 <= c2*pi*floe_rad_c(1)) then
+            !   work_2 = c2 * pi * floe_rad_c(1)
+            !else if (work_2 >= c2*pi*floe_rad_c(12)) then
+            !   work_2 = c2 * pi *floe_rad_c(12)
             endif   
             !for repr. radius scaling
             !fract = work / (c2 * P_i_max)
-            !for mean perimeter scaling with log
-            !if (work/floe_rad_c(11) <= floe_rad_c(0)/floe_rad_c(11)) then
+            if (work <= floe_rad_c(12)/c10) then
+               !for mean perimeter scaling with log
                !fract = work_2 / (c2 * P_i_max)
-            !else
-               !fract = (work_2 * (log(work/floe_rad_c(11))+c1)) &
-                !     / (c2 * P_i_max)
-            !endif
+               !for perimeter scaling with log
+               fract = c1/c2 - puny
+               write(warnstr,*) subname, 'if-case', work
+               call icepack_warnings_add(warnstr)
+            else
+               !for mean perimeter scaling with log
+               !fract = (work_2 * (log(work/floe_rad_c(12))+c1)) &
+               !     / (c2 * P_i_max)
+               !for perimeter scaling with log
+               fract = (c4 * pi /(c2 * work * c4 * floeshape))   &
+                    * (log10(work/floe_rad_c(12))+c1) /c2 *P_i_max
+               write(warnstr,*) subname, 'Log:', (log10(work/floe_rad_c(12))+c1)
+               call icepack_warnings_add(warnstr)
+            endif
             !for mean perimeter scaling without log
-            fract = work_2 / (c2 * P_i_max)            
+            !fract = work_2 / (c2 * P_i_max)            
             write(warnstr,*) subname, 'fract:', fract
             call icepack_warnings_add(warnstr)
             strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
