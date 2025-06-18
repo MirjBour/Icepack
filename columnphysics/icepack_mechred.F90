@@ -1748,8 +1748,8 @@
             !if (work_1 <= c0) then
             !   work_1 = puny
             !endif
-            write(warnstr,*) subname, 'rep. Radius:', work
-            call icepack_warnings_add(warnstr)
+            !write(warnstr,*) subname, 'rep. Radius:', work
+            !call icepack_warnings_add(warnstr)
             !do k = 1, nfsd
             !   do n = 1, ncat
             !      afsdn(k,n) = trcrn(nt_fsd+k-1,n)
@@ -1780,8 +1780,8 @@
                !fract = work_2 / (c2 * P_i_max)
                !for perimeter scaling with log and rep. radius inverse log
                fract = c1/c2 + puny
-               write(warnstr,*) subname, 'if-case', work
-               call icepack_warnings_add(warnstr)
+               !write(warnstr,*) subname, 'if-case', work
+               !call icepack_warnings_add(warnstr)
             else
                !for mean perimeter scaling with log
                !fract = (work_2 * (log(work/floe_rad_c(12))+c1)) &
@@ -1791,13 +1791,13 @@
                !     * (log10(work/floe_rad_c(12))+c1) /c2 *P_i_max
                !for rep. radius inverse log scaling (H)
                fract = (c1-(log10(work/floe_rad_c(12))+c1))/c2               
-               write(warnstr,*) subname, 'Log:', (log10(work/floe_rad_c(12))+c1)
-               call icepack_warnings_add(warnstr)
+               !write(warnstr,*) subname, 'Log:', (log10(work/floe_rad_c(12))+c1)
+               !call icepack_warnings_add(warnstr)
             endif
             !for mean perimeter scaling without log
             !fract = work_2 / (c2 * P_i_max)            
-            write(warnstr,*) subname, 'fract:', fract
-            call icepack_warnings_add(warnstr)
+            !write(warnstr,*) subname, 'fract:', fract
+            !call icepack_warnings_add(warnstr)
             strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
          else                   !fasd_fract = 1
             strength = Pstar*vice*exp(-Cstar*(c1-aice))
