@@ -1653,8 +1653,10 @@
 
       real (kind=dbl_kind) :: &
          work   , & ! temporary variable
-         work_1 ,&  ! temporary variable
-         work_2, &  ! temporary variable
+         work_1 , & ! temporary variable
+         work_2,  & ! temporary variable
+         work_3,  & ! temporary variable
+         kappa,   & !tuning parameter for exp
          P_i_max, & ! minimum perimeter (should be tuneable)
          hi     , & ! ice thickness (m)
          h2rdg  , & ! mean value of h^2 for new ridge
@@ -1726,6 +1728,8 @@
             work = c0 !representative radius
             work_1 = c0 !Total number of floes
             work_2 = c0 !mean perimeter
+            work_3 = c0 !perimeter
+            kappa = (c2 * LOG(2.0)) /floe_rad_c(12)
             !for perimeter scaling
             !P_i_max = c4 * pi/(c2 * floe_rad_c(1) * c4 * floeshape) !is const just depends on smallest possible floes shape
             !for perimeter-log scaling
@@ -1741,6 +1745,9 @@
                   work = work &
                             + (afsdn(k,n) * floe_rad_c(k) &
                             * aicen(n)/aice)
+                  work_3 = work_3 &
+                            + (c4 * afsdn(k,n) * floe_rad_c(k) &
+                            * aicen(n)/(floe_rad_c(k)**2 * aice))
                   !work_1 = work_1 &
                   !         + (afsdn(k,n) * aicen(n) / c4*floeshape*floe_rad_c(k)**2)
                end do
@@ -1758,31 +1765,31 @@
             !                  /(pi * floe_rad_c(k)**2 * work_1)
             !   end do
             !end do
-            if (work <= floe_rad_c(1)) then
+            !if (work <= floe_rad_c(1)) then
                !for perimeter scaling
                !fract = c1/c2 - puny
                !for repr. radius scaling
-               work = floe_rad_c(1)
+            !   work = floe_rad_c(1)
             !for perimeter scaling
             !else
                !fract = (c4 * pi /(c2 * work * c4 * floeshape))/c2 *P_i_max
-            else if (work >= floe_rad_c(12)) then
-               work = floe_rad_c(12)
+            !else if (work >= floe_rad_c(12)) then
+            !   work = floe_rad_c(12)
             !else if (work_2 <= c2*pi*floe_rad_c(1)) then
             !   work_2 = c2 * pi * floe_rad_c(1)
             !else if (work_2 >= c2*pi*floe_rad_c(12)) then
             !   work_2 = c2 * pi *floe_rad_c(12)
-            endif   
+            !endif   
             !for repr. radius scaling
             !fract = work / (c2 * P_i_max)
-            if (work <= floe_rad_c(12)/c10) then
+            !if (work <= floe_rad_c(12)/c10) then
                !for mean perimeter scaling with log
                !fract = work_2 / (c2 * P_i_max)
                !for perimeter scaling with log and rep. radius inverse log
-               fract = c1/c2 + puny
+               !fract = c1/c2 + puny
                !write(warnstr,*) subname, 'if-case', work
                !call icepack_warnings_add(warnstr)
-            else
+            !else
                !for mean perimeter scaling with log
                !fract = (work_2 * (log(work/floe_rad_c(12))+c1)) &
                !     / (c2 * P_i_max)
@@ -1793,13 +1800,16 @@
                fract = (c1-(log10(work/floe_rad_c(12))+c1))/c2               
                !write(warnstr,*) subname, 'Log:', (log10(work/floe_rad_c(12))+c1)
                !call icepack_warnings_add(warnstr)
-            endif
+            !endif
             !for mean perimeter scaling without log
             !fract = work_2 / (c2 * P_i_max)            
             !write(warnstr,*) subname, 'fract:', fract
             !call icepack_warnings_add(warnstr)
-            strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
-         else                   !fasd_fract = 1
+            !strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
+            ! for perimeter exponential scaling
+            fract = c1 -c1/c2 * (c1 - EXP(-kappa * work_3))
+            strength = Pstar*vice*exp(-Cstar*(c1-aice)) * fract
+         else                   !fsd_fract = 1
             strength = Pstar*vice*exp(-Cstar*(c1-aice))
          endif
       endif                     ! kstrength
