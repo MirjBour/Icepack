@@ -1657,7 +1657,9 @@
          work_2,  & ! temporary variable
          work_3,  & ! temporary variable
          kappa,   & !tuning parameter for exp
-         P_i_max, & ! minimum perimeter (should be tuneable)
+         beta,    & !tuning parameter for exp
+         P_i_max, & ! maximal perimeter
+         P_i_min, & ! minimal perimeter
          hi     , & ! ice thickness (m)
          h2rdg  , & ! mean value of h^2 for new ridge
          dh2rdg     ! change in mean value of h^2 per unit area
@@ -1724,14 +1726,15 @@
       !-----------------------------------------------------------------
       ! Compute ice strength as in Hibler (1979)
       !-----------------------------------------------------------------
-         if (fsdfract == 1 .and. aice > puny ) then
+    if (fsdfract == 1 .and. aice > puny ) then
             work = c0 !representative radius
             work_1 = c0 !Total number of floes
             work_2 = c0 !mean perimeter
             work_3 = c0 !perimeter
-            kappa = (c2 * LOG(2.0)) /floe_rad_c(12)
-            !for perimeter scaling
-            !P_i_max = c4 * pi/(c2 * floe_rad_c(1) * c4 * floeshape) !is const just depends on smallest possible floes shape
+            P_i_max = c4 * pi/(c2 * floe_rad_c(1) * c4 * floeshape) ! maximum Perimeter
+            P_i_min = c4 * pi/(c2 * floe_rad_c(12) * c4 * floeshape) ! minimum Perimeter
+            kappa = -LOG(c2) / (P_i_min - P_i_max/c2) ! half time for half P_i_max
+            beta = kappa * P_i_min
             !for perimeter-log scaling
             !P_i_max = c4 * pi * c10 /(c2 * floe_rad_c(12) * c4 * floeshape)
             !for repr. radius scaling
@@ -1807,7 +1810,9 @@
             !call icepack_warnings_add(warnstr)
             !strength = Pstar*vice*exp(-Cstar*(c1-aice)) * (c1 - fract)
             ! for perimeter exponential scaling
-            fract = c1 -c1/c2 * (c1 - EXP(-kappa * work_3))
+            fract = c1 -c1/c2 * (c1 - EXP(-kappa * work_3 + beta))
+            !write(warnstr,*) subname, 'fract', fract
+            !call icepack_warnings_add(warnstr)
             strength = Pstar*vice*exp(-Cstar*(c1-aice)) * fract
          else                   !fsd_fract = 1
             strength = Pstar*vice*exp(-Cstar*(c1-aice))
